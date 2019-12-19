@@ -6,6 +6,8 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -21,7 +23,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @EnableConfigurationProperties(SecurityProperties.class)
 public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 	 private static final String ROOT_PATTERN = "/**";
-
+	 private static final String ROOT_PATTERN_TEST = "/test/**";
 	    private final SecurityProperties securityProperties;
 
 	    private TokenStore tokenStore;
@@ -38,7 +40,7 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
 	    @Override
 	    public void configure(HttpSecurity http) throws Exception {
 	        http.authorizeRequests()
-	                .antMatchers(HttpMethod.GET, ROOT_PATTERN).access("#oauth2.hasScope('read')")
+	                .antMatchers(HttpMethod.GET, ROOT_PATTERN_TEST).access("#oauth2.hasScope('read')")
 	                .antMatchers(HttpMethod.POST, ROOT_PATTERN).access("#oauth2.hasScope('write')")
 	                .antMatchers(HttpMethod.PATCH, ROOT_PATTERN).access("#oauth2.hasScope('write')")
 	                .antMatchers(HttpMethod.PUT, ROOT_PATTERN).access("#oauth2.hasScope('write')")
@@ -68,8 +70,11 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
 	    }
 
 	    private String getPublicKeyAsString() {
+	    	Resource res = new ClassPathResource("pubKey.txt");
 	        try {
-	            return IOUtils.toString(securityProperties.getJwt().getPublicKey().getInputStream(), UTF_8);
+	        	String publicKey = null;
+	        	publicKey = IOUtils.toString(res.getInputStream(),UTF_8);
+	        	return publicKey;
 	        } catch (IOException e) {
 	            throw new RuntimeException(e);
 	        }
